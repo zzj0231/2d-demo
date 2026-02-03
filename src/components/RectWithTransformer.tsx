@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from "react";
-import { Shape, Transformer, Group, Circle, Text } from "react-konva";
+import { Shape, Transformer, Group, Circle, Text, Rect } from "react-konva";
 import Konva from "konva";
 
 export interface Rectangle {
@@ -49,43 +49,20 @@ const RectWithTransformer = ({
 
   return (
     <React.Fragment>
-      <Shape
-        sceneFunc={(context, shape) => {
-          const w = shape.width();
-          const h = shape.height();
-          // Leave middle 40% empty on top and bottom
-          const gapRatio = 0.4;
-          const gapStart = w * (0.5 - gapRatio / 2);
-          const gapEnd = w * (0.5 + gapRatio / 2);
-
-          context.beginPath();
-          // Left vertical line
-          context.moveTo(0, 0);
-          context.lineTo(0, h);
-
-          // Right vertical line
-          context.moveTo(w, 0);
-          context.lineTo(w, h);
-
-          // Top left segment
-          context.moveTo(0, 0);
-          context.lineTo(gapStart, 0);
-
-          // Top right segment
-          context.moveTo(gapEnd, 0);
-          context.lineTo(w, 0);
-
-          // Bottom left segment
-          context.moveTo(0, h);
-          context.lineTo(gapStart, h);
-
-          // Bottom right segment
-          context.moveTo(gapEnd, h);
-          context.lineTo(w, h);
-
-          // Only stroke, no fill for the lines
-          context.fillStrokeShape(shape);
+      <Rect
+        {...shapeProps}
+        fill={isSelected ? undefined : shapeProps.fill}
+        fillLinearGradientStartPoint={{ x: 0, y: 0 }}
+        fillLinearGradientEndPoint={{
+          x: shapeProps.width,
+          y: shapeProps.height,
         }}
+        fillLinearGradientColorStops={
+          isSelected
+            ? [0, "rgba(255, 0, 0, 0.6)", 1, "rgba(255, 0, 0, 0.1)"]
+            : undefined
+        }
+        fillPriority={isSelected ? "linear-gradient" : undefined}
         shadowColor='black'
         shadowBlur={isSelected ? 10 : 0}
         shadowOpacity={isSelected ? 0.6 : 0}
@@ -95,16 +72,9 @@ const RectWithTransformer = ({
             ? (shapeProps.strokeWidth || 2) + 2
             : shapeProps.strokeWidth || 2
         }
-        hitFunc={(context, shape) => {
-          // Full rectangle for hit detection
-          context.beginPath();
-          context.rect(0, 0, shape.width(), shape.height());
-          context.fillShape(shape);
-        }}
         onMouseDown={onSelect}
         onTouchStart={onSelect}
-        ref={shapeRef}
-        {...shapeProps}
+        ref={shapeRef as any}
         draggable
         dragBoundFunc={(pos) => {
           const node = shapeRef.current;
@@ -197,7 +167,7 @@ const RectWithTransformer = ({
             rotateEnabled={true}
             borderEnabled={false}
           />
-          <Group
+          {/* <Group
             ref={menuRef}
             x={shapeProps.x}
             y={shapeProps.y}
@@ -287,7 +257,7 @@ const RectWithTransformer = ({
                 width={20}
               />
             </Group>
-          </Group>
+          </Group> */}
         </React.Fragment>
       )}
     </React.Fragment>
